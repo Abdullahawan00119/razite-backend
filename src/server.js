@@ -14,6 +14,7 @@ const applicationRoutes = require('./routes/applicationRoutes');
 const app = express();
 
 // Create uploads directories if they don't exist
+// NOTE: Vercel is stateless; files uploaded here will not persist across restarts.
 const uploadDirs = ['./uploads', './uploads/cvs'];
 uploadDirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
@@ -41,11 +42,11 @@ const corsOptions = {
         ].filter(Boolean);
 
         // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
             console.warn(`CORS blocked origin: ${origin}`);
-            callback(null, true); // Allow all for development
+            callback(null, true); // Allow all for now to prevent deployment blockers
         }
     },
     credentials: true,
@@ -61,7 +62,11 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        environment: process.env.VERCEL ? 'vercel' : 'local'
+    });
 });
 
 // Auth routes (public)
@@ -82,12 +87,16 @@ app.use((req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
+// Start server - Only if not running on Vercel
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`\n✅ Server is running on http://localhost:${PORT}`);
-    console.log(`📚 API Documentation available at http://localhost:${PORT}/api`);
-    console.log(`🔧 NODE_ENV: ${process.env.NODE_ENV}\n`);
-});
 
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`\n✅ Server is running on http://localhost:${PORT}`);
+        console.log(`📚 API Documentation available at http://localhost:${PORT}/api`);
+        console.log(`🔧 NODE_ENV: ${process.env.NODE_ENV}\n`);
+    });
+}
+
+// Export for Vercel
 module.exports = app;
