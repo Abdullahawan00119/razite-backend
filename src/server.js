@@ -9,13 +9,12 @@ const errorHandler = require('./middleware/errorHandler');
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const jobRoutes = require('./routes/jobRoutes');
-const applicationRoutes = require('./routes/applicationRoutes');
 
 const app = express();
 
 // Create uploads directories if they don't exist
 // NOTE: Vercel is stateless; files uploaded here will not persist across restarts.
-const uploadDirs = ['./uploads', './uploads/cvs'];
+const uploadDirs = ['./uploads'];
 uploadDirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -74,7 +73,6 @@ app.use('/api/auth', authRoutes);
 
 // Routes
 app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

@@ -67,25 +67,6 @@ const jobSchema = new mongoose.Schema({
   skills: [{
     type: String
   }],
-  applications: [{
-    applicantId: mongoose.Schema.Types.ObjectId,
-    name: String,
-    email: String,
-    phone: String,
-    resume: String,
-    coverLetter: String,
-    city: String,
-    district: String,
-    status: {
-      type: String,
-      enum: ['pending', 'reviewed', 'shortlisted', 'rejected'],
-      default: 'pending'
-    },
-    appliedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
   status: {
     type: String,
     enum: ['open', 'closed', 'on-hold'],
